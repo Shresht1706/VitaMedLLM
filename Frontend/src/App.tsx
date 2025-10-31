@@ -1,8 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LoginPage from './components/LoginPage';
 import ChatInterface from './components/ChatInterface';
-import { functions } from './firebaseConfig'; // <-- ADD THIS
-import { httpsCallable } from 'firebase/functions'; // <-- ADD THIS
+import { 
+  auth, 
+  functions, 
+  googleProvider, 
+  signInWithPopup, 
+  signOut, 
+  httpsCallable 
+} from './firebaseConfig';
+import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 
 export interface Message {
   id: string;
@@ -25,64 +32,29 @@ export interface User {
 }
 
 export default function App() {
+  const [authReady, setAuthReady] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [conversations, setConversations] = useState<Conversation[]>([
-    {
-      id: '1',
-      title: 'Symptoms of Type 2 Diabetes',
-      messages: [
-        {
-          id: '1-1',
-          role: 'user',
-          content: 'What are the symptoms of type 2 diabetes?',
-          timestamp: new Date(Date.now() - 86400000)
-        },
-        {
-          id: '1-2',
-          role: 'assistant',
-          content: 'Type 2 diabetes symptoms develop gradually and may include: increased thirst and frequent urination, increased hunger, unintended weight loss, fatigue, blurred vision, slow-healing sores, and frequent infections. Many people with type 2 diabetes have no symptoms initially.',
-          timestamp: new Date(Date.now() - 86400000)
-        }
-      ],
-      createdAt: new Date(Date.now() - 86400000)
-    },
-    {
-      id: '2',
-      title: 'Understanding Blood Pressure',
-      messages: [
-        {
-          id: '2-1',
-          role: 'user',
-          content: 'What is considered normal blood pressure?',
-          timestamp: new Date(Date.now() - 172800000)
-        },
-        {
-          id: '2-2',
-          role: 'assistant',
-          content: 'Normal blood pressure is generally considered to be below 120/80 mmHg. The first number (systolic) measures pressure when the heart beats, and the second number (diastolic) measures pressure between beats. Elevated blood pressure is 120-129 systolic and less than 80 diastolic.',
-          timestamp: new Date(Date.now() - 172800000)
-        }
-      ],
-      createdAt: new Date(Date.now() - 172800000)
-    }
-  ]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
-  const handleLogin = () => {
-    // Mock login - in production this would use Google OAuth
-    setUser({
-      name: 'Dr. Sarah Johnson',
-      email: 'sarah.johnson@example.com'
-    });
-    setIsLoggedIn(true);
+  const handleLogin = async () => {
+    try {
+      // This will use our emulator's fake Google login popup
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error("Error signing in:", error);
+    }
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUser(null);
-    setActiveConversationId(null);
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setConversations([]); // Clear conversations on logout
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   const toggleTheme = () => {
@@ -127,6 +99,28 @@ export default function App() {
       setActiveConversationId(newConversation.id);
     }
 
+    useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+        if (firebaseUser) {
+          // If the user is a real Firebase user, set our React state
+          setUser({
+            name: firebaseUser.displayName || 'Test User',
+            email: firebaseUser.email || 'test@example.com',
+            avatar: firebaseUser.photoURL || undefined
+          });
+          setIsLoggedIn(true); // Set your existing state
+        } else {
+          // User is logged out
+          setUser(null);
+          setIsLoggedIn(false); // Set your existing state
+        }
+        setAuthReady(true); // Auth is ready, we can show the app
+      });
+
+  // Cleanup subscription on unmount
+  return () => unsubscribe();
+}, []); // Empty array means this runs once on mount
+
   
     // Call the Firebase Function
   const getLlmResponse = httpsCallable(functions, 'getLlmResponse');
@@ -154,7 +148,7 @@ export default function App() {
     const errorMessage: Message = {
       id: Date.now().toString(),
       role: 'assistant',
-      content: 'Sorry, I encountered an error. Please try again.',
+      content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : String(error)}`,
       timestamp: new Date()
     };
 
@@ -176,6 +170,11 @@ export default function App() {
   };
 
   const activeConversation = conversations.find(conv => conv.id === activeConversationId);
+
+    if (!authReady) {
+    return <div />; // Or a loading component
+  }
+
 
   if (!isLoggedIn) {
     return <LoginPage onLogin={handleLogin} />;
