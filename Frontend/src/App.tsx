@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import LoginPage from './components/LoginPage';
 import ChatInterface from './components/ChatInterface';
+import { functions } from './firebaseConfig'; // <-- ADD THIS
+import { httpsCallable } from 'firebase/functions'; // <-- ADD THIS
 
 export interface Message {
   id: string;
@@ -125,24 +127,45 @@ export default function App() {
       setActiveConversationId(newConversation.id);
     }
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: 'Thank you for your question. As an AI assistant, I can provide general health information, but please remember to consult with a qualified healthcare professional for personalized medical advice and diagnosis.',
-        timestamp: new Date()
-      };
+  
+    // Call the Firebase Function
+  const getLlmResponse = httpsCallable(functions, 'getLlmResponse');
 
-      setConversations(prev =>
-        prev.map(conv =>
-          conv.id === (activeConversationId || messageId)
-            ? { ...conv, messages: [...conv.messages, aiMessage] }
-            : conv
-        )
-      );
-    }, 1500);
-  };
+  try {
+    const result: any = await getLlmResponse({ prompt: content });
+
+    const aiMessage: Message = {
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: result.data.text, // Get text from our function's response
+      timestamp: new Date()
+    };
+
+    setConversations(prev =>
+      prev.map(conv =>
+        conv.id === (activeConversationId || messageId)
+          ? { ...conv, messages: [...conv.messages, aiMessage] }
+          : conv
+      )
+    );
+
+  } catch (error) {
+    console.error("Error calling Firebase Function:", error);
+    const errorMessage: Message = {
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: 'Sorry, I encountered an error. Please try again.',
+      timestamp: new Date()
+    };
+
+  setConversations(prev =>
+    prev.map(conv =>
+      conv.id === (activeConversationId || messageId)
+        ? { ...conv, messages: [...conv.messages, errorMessage] }
+        : conv
+    )
+  );
+}
 
   const handleDeleteConversation = (id: string) => {
     setConversations(prev => prev.filter(conv => conv.id !== id));
