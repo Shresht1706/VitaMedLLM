@@ -166,7 +166,7 @@ export default function App() {
     )
   );
 }
-}
+};
 
   const handleDeleteConversation = (id: string) => {
     setConversations(prev => prev.filter(conv => conv.id !== id));

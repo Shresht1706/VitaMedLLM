@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-// Import ALL the auth and functions things we need in App.tsx
+// Import ALL the auth and functions things we need
 import { 
   getAuth, 
   connectAuthEmulator, // Import the emulator connector
