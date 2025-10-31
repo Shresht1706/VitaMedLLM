@@ -97,7 +97,7 @@ export default function App() {
     setActiveConversationId(id);
   };
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     const messageId = Date.now().toString();
     const newMessage: Message = {
       id: messageId,
@@ -165,6 +165,7 @@ export default function App() {
         : conv
     )
   );
+}
 }
 
   const handleDeleteConversation = (id: string) => {
