@@ -39,6 +39,28 @@ export default function App() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        // If the user is a real Firebase user, set our React state
+        setUser({
+          name: firebaseUser.displayName || 'Test User',
+          email: firebaseUser.email || 'test@example.com',
+          avatar: firebaseUser.photoURL || undefined
+        });
+        setIsLoggedIn(true); // Set your existing state
+      } else {
+        // User is logged out
+        setUser(null);
+        setIsLoggedIn(false); // Set your existing state
+      }
+      setAuthReady(true); // Auth is ready, we can show the app
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []); // Empty array means this runs once on mount
+
   const handleLogin = async () => {
     try {
       // This will use our emulator's fake Google login popup
@@ -99,29 +121,6 @@ export default function App() {
       setActiveConversationId(newConversation.id);
     }
 
-    useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
-        if (firebaseUser) {
-          // If the user is a real Firebase user, set our React state
-          setUser({
-            name: firebaseUser.displayName || 'Test User',
-            email: firebaseUser.email || 'test@example.com',
-            avatar: firebaseUser.photoURL || undefined
-          });
-          setIsLoggedIn(true); // Set your existing state
-        } else {
-          // User is logged out
-          setUser(null);
-          setIsLoggedIn(false); // Set your existing state
-        }
-        setAuthReady(true); // Auth is ready, we can show the app
-      });
-
-  // Cleanup subscription on unmount
-  return () => unsubscribe();
-}, []); // Empty array means this runs once on mount
-
-  
     // Call the Firebase Function
   const getLlmResponse = httpsCallable(functions, 'getLlmResponse');
 

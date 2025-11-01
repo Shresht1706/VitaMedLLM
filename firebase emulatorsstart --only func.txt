@@ -1,0 +1,2 @@
+firebase emulators:start --only functions,auth
+npm run dev
