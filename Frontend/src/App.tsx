@@ -3,13 +3,13 @@ import LoginPage from './components/LoginPage';
 import ChatInterface from './components/ChatInterface';
 import { 
   auth, 
-  functions, 
   googleProvider, 
   signInWithPopup, 
-  signOut, 
-  httpsCallable 
+  signOut 
 } from './firebaseConfig';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+
+const RENDER_BACKEND_URL = "https://YOUR-RENDER-SERVICE-NAME.onrender.com/generate"; //backend url
 
 export interface Message {
   id: string;
@@ -121,16 +121,38 @@ export default function App() {
       setActiveConversationId(newConversation.id);
     }
 
-    // Call the Firebase Function
-  const getLlmResponse = httpsCallable(functions, 'getLlmResponse');
-
   try {
-    const result: any = await getLlmResponse({ prompt: content });
+    if (RENDER_BACKEND_URL.includes("YOUR-RENDER-SERVICE-NAME")) {
+      throw new Error("Render backend URL is not configured in App.tsx.");
+    }
+
+    // Build conversation history (optional context)
+    const currentConversation = conversations.find(conv => conv.id === (activeConversationId || messageId));
+    const mappedHistory = currentConversation ? currentConversation.messages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    })) : [];
+
+    const response = await fetch(RENDER_BACKEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ history: mappedHistory, prompt: content }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Server responded with ${response.status}`);
+    }
+
+    const data = await response.json();
+    const modelResponse = data.text;
+
+    if (!modelResponse) throw new Error("Invalid response format from backend.");
 
     const aiMessage: Message = {
       id: Date.now().toString(),
       role: 'assistant',
-      content: result.data.text, // Get text from our function's response
+      content: modelResponse,
       timestamp: new Date()
     };
 
@@ -141,9 +163,8 @@ export default function App() {
           : conv
       )
     );
-
   } catch (error) {
-    console.error("Error calling Firebase Function:", error);
+    console.error("Error calling backend:", error);
     const errorMessage: Message = {
       id: Date.now().toString(),
       role: 'assistant',
@@ -151,15 +172,14 @@ export default function App() {
       timestamp: new Date()
     };
 
-  setConversations(prev =>
-    prev.map(conv =>
-      conv.id === (activeConversationId || messageId)
-        ? { ...conv, messages: [...conv.messages, errorMessage] }
-        : conv
-    )
-  );
-}
-};
+    setConversations(prev =>
+      prev.map(conv =>
+        conv.id === (activeConversationId || messageId)
+          ? { ...conv, messages: [...conv.messages, errorMessage] }
+          : conv
+      )
+    );
+  }
 
   const handleDeleteConversation = (id: string) => {
     setConversations(prev => prev.filter(conv => conv.id !== id));
@@ -170,12 +190,12 @@ export default function App() {
 
   const activeConversation = conversations.find(conv => conv.id === activeConversationId);
 
-    if (!authReady) {
+if (!authReady) {
     return <div />; // Or a loading component
   }
 
 
-  if (!isLoggedIn) {
+if (!isLoggedIn) {
     return <LoginPage onLogin={handleLogin} />;
   }
 
