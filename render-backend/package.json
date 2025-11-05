@@ -3,16 +3,16 @@
   "version": "1.0.0",
   "description": "Secure backend for VitaMedLLM",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "install": "npm install"
+    "start": "node index.js"
   },
   "engines": {
-    "node": "18"
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^3.3.2"
   }
 }
