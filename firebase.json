@@ -1,7 +1,4 @@
 {
-  "functions": {
-    "source": "Functions"
-  },
   "hosting": {
     "public": "Frontend/build",
     "ignore": [
@@ -19,9 +16,6 @@
   "emulators": {
     "auth": {
       "port": 9099
-    },
-    "functions": {
-      "port": 5001
     },
     "hosting": {
       "port": 5000
