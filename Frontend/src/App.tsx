@@ -9,7 +9,7 @@ import {
 } from './firebaseConfig';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 
-const RENDER_BACKEND_URL = "https://github.com/Shresht1706/VitaMedLLM"; //backend url
+const RENDER_BACKEND_URL = "https://vitamedllm.onrender.com"; //backend url
 
 export interface Message {
   id: string;
