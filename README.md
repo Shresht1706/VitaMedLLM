@@ -1,111 +1,144 @@
-````markdown
 # VitaMedLLM
 
 This repository contains the code for **VitaMedLLM**, a medical AI assistant web application.
 
-## Project Overview
+## 🩺 Project Overview
 
-VitaMedLLM is a chat application designed to provide medical information. It features a React-based frontend for the user interface and a Node.js backend to securely interact with the Google Gemini large language model. User authentication is handled by Firebase.
-
-## Architecture
-
-The project is split into two main parts: a frontend application and a backend server.
-
-1.  **Frontend (`/Frontend`)**
-    * **Framework:** Built with **React** and **Vite**.
-    * **Language:** **TypeScript**.
-    * **UI:** Styled using **Tailwind CSS** and components from **shadcn/ui**.
-    * **Authentication:** Uses **Firebase Authentication** with Google Sign-In. It's configured to connect to the Firebase Auth Emulator when running locally.
-    * **State Management:** React's `useState` and `useEffect` hooks in `App.tsx` manage the application's state, including user auth, conversations, and theme.
-    * **Deployment:** Hosted on **Firebase Hosting**.
-
-2.  **Backend (`/render-backend`)**
-    * **Framework:** A simple **Node.js** / **Express** server.
-    * **Purpose:** Acts as a secure proxy to the Google Gemini API. It receives prompts from the frontend, injects the `GEMINI_API_KEY` (from environment variables), adds a system instruction for the AI's persona, and forwards the request to the Gemini API.
-    * **Deployment:** Hosted on **Render**.
+VitaMedLLM is a chat application designed to provide accurate and helpful medical information.  
+It features a **React-based frontend** for the user interface and a **Node.js backend** that securely interacts with the **Google Gemini** large language model.  
+User authentication is handled using **Firebase**.
 
 ---
 
-## How It Works
+## 🧩 Architecture
 
-1.  **Authentication:** The user first sees a `LoginPage` and must log in using Google. Firebase Authentication handles this process.
-2.  **Chat Interface:** Once logged in, the `ChatInterface` is displayed, which consists of a `Sidebar` and a `ChatView`.
-3.  **Sending a Message:** The user types a message in the `ChatInput` component.
-4.  **Backend Request:** The `App.tsx` component sends the user's prompt and conversation history to the Render backend service at `https://vitamedllm.onrender.com/generate`.
-5.  **Gemini API Call:** The Express backend receives the request, adds the secret API key and a system prompt ("You are 'Vita Med', a specialized medical AI assistant..."), and calls the Google Gemini API.
-6.  **Displaying Response:** The backend returns the AI's text-only response, which is then displayed in the `ChatView` as a new message.
+The project consists of two main parts: a **frontend application** and a **backend server**.
+
+### 1. Frontend (`/Frontend`)
+- **Framework:** React + Vite  
+- **Language:** TypeScript  
+- **Styling:** Tailwind CSS + shadcn/ui components  
+- **Authentication:** Firebase Authentication (Google Sign-In)  
+  - Automatically connects to the **Firebase Auth Emulator** when running locally  
+- **State Management:** Uses React’s `useState` and `useEffect` hooks in `App.tsx` to manage user authentication, chat sessions, and theme  
+- **Deployment:** Hosted on **Firebase Hosting**
+
+### 2. Backend (`/render-backend`)
+- **Framework:** Node.js + Express  
+- **Purpose:** Acts as a secure proxy to the **Google Gemini API**  
+  - Receives prompts from the frontend  
+  - Injects the `GEMINI_API_KEY` (from environment variables)  
+  - Adds a system prompt for the AI persona  
+  - Forwards the request to the Gemini API and returns the response  
+- **Deployment:** Hosted on **Render**
 
 ---
 
-## Key Technologies
+## ⚙️ How It Works
 
-* **Frontend:** React, Vite, TypeScript, Tailwind CSS, shadcn/ui, Lucide Icons
-* **Backend:** Node.js, Express.js
-* **AI:** Google Gemini API
-* **Platform:** Firebase (Authentication, Hosting, Emulators), Render (Backend Hosting)
+1. **Authentication:**  
+   The user logs in using Google on the `LoginPage`. Firebase Authentication handles the login.
+
+2. **Chat Interface:**  
+   Once authenticated, the `ChatInterface` (composed of `Sidebar` and `ChatView`) is shown.
+
+3. **User Message:**  
+   The user sends a message via the `ChatInput` component.
+
+4. **Backend Request:**  
+   The `App.tsx` component sends the message and conversation history to the backend endpoint:  
+   ```
+   https://vitamedllm.onrender.com/generate
+   ```
+
+5. **Gemini API Call:**  
+   The Express backend adds the system prompt  
+   (“You are 'Vita Med', a specialized medical AI assistant…”)  
+   and sends the request to the **Google Gemini API**.
+
+6. **Response Display:**  
+   The backend returns the AI’s text-only response, which appears in the `ChatView`.
 
 ---
 
-## How to Run
+## 🧠 Key Technologies
 
-### 1. Frontend
+| Category | Tools |
+|-----------|--------|
+| **Frontend** | React, Vite, TypeScript, Tailwind CSS, shadcn/ui, Lucide Icons |
+| **Backend** | Node.js, Express.js |
+| **AI** | Google Gemini API |
+| **Platform** | Firebase (Auth, Hosting, Emulators), Render (Backend Hosting) |
 
-Navigate to the `/Frontend` directory:
+---
+
+## 🚀 Running the Project
+
+### 1. Frontend Setup
 
 ```bash
 cd Frontend
-````
-
-Install dependencies:
-
-```bash
-npm i
-```
-
-Run the development server (usually on `http://localhost:3000`):
-
-```bash
+npm install
 npm run dev
 ```
 
-### 2\. Backend
+Frontend runs by default at **http://localhost:3000**.
 
-Navigate to the `/render-backend` directory:
+---
+
+### 2. Backend Setup
 
 ```bash
 cd render-backend
-```
-
-Install dependencies:
-
-```bash
-npm i
+npm install
 ```
 
 Create a `.env` file and add your Gemini API key:
 
-```
+```env
 GEMINI_API_KEY=YOUR_API_KEY_HERE
 ```
 
-Run the backend server (usually on `http://localhost:8080`):
+Run the backend server:
 
 ```bash
 npm start
 ```
 
-### 3\. Firebase Emulators
+Backend runs by default at **http://localhost:8080**.
 
-The project is configured to use the Firebase Auth emulator for local development.
+---
 
-Start the emulators:
+### 3. Firebase Emulators (Optional for Local Testing)
+
+If you’re using Firebase locally:
 
 ```bash
-# From the root directory
+# From the project root
 firebase emulators:start --only auth
 ```
 
-The frontend application (`firebaseConfig.ts`) will automatically detect it's running on `localhost` and connect to the Auth emulator instead of production Firebase.
+The `firebaseConfig.ts` file automatically detects if you’re on `localhost`  
+and connects to the **Firebase Auth Emulator** instead of the live Firebase service.
 
-```
-```
+---
+
+## 📦 Deployment
+
+- **Frontend:** Deploy to **Firebase Hosting**  
+- **Backend:** Deploy to **Render** (ensure your environment variable `GEMINI_API_KEY` is configured)  
+
+---
+
+## 👨‍⚕️ About VitaMedLLM
+
+VitaMedLLM is designed as a **secure, user-friendly medical AI chat system**, combining:
+- Trusted authentication via Google  
+- A modern, responsive UI  
+- A backend that protects sensitive API keys  
+- Integration with Google Gemini for natural language medical responses  
+
+---
+
+**Author:** VitaMedLLM Team  
+**License:** MIT  
