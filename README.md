@@ -10,6 +10,18 @@ User authentication is handled using **Firebase**.
 
 ---
 
+## Upcoming Releases
+
+- integration with custom medical trained llama model instead of current Gemini API backend
+- Addition of Chat history in relation to google account
+- Addition of STT feature using voxtral
+- FIne tuning of responses.
+
+# Issues Faced and Fixes 
+
+- Firebase doesn't allow direct integration with Gemini on free tier- host backend on render free tier for a proxy gemini api service and host auth and frontend on firebase
+- Render spins down instances after 15 mins of inactivity - A cron job service every 14 mins
+
 ## 🧩 Architecture
 
 The project consists of two main parts: a **frontend application** and a **backend server**.
@@ -127,16 +139,6 @@ and connects to the **Firebase Auth Emulator** instead of the live Firebase serv
 
 - **Frontend:** Deploy to **Firebase Hosting**  
 - **Backend:** Deploy to **Render** (ensure your environment variable `GEMINI_API_KEY` is configured)  
-
----
-
-## 👨‍⚕️ About VitaMedLLM
-
-VitaMedLLM is designed as a **secure, user-friendly medical AI chat system**, combining:
-- Trusted authentication via Google  
-- A modern, responsive UI  
-- A backend that protects sensitive API keys  
-- Integration with Google Gemini for natural language medical responses  
 
 ---
 
